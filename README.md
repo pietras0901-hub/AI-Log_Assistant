@@ -30,6 +30,12 @@ backend, dzięki czemu warstwa mobilna pozostaje cienka i łatwa w utrzymaniu.
 
 ---
 
+### Przepływ automatyzacji (n8n + Gemini AI)
+
+- **n8n** monitoruje logi i automatycznie triggeruje analizę przy błędach CRITICAL/ERROR
+- **Gemini AI** generuje diagnozę w języku polskim: co się stało, dlaczego groźne, 
+  co zrobić
+- Technik widzi gotową instrukcję naprawczą bez potrzeby samodzielnej analizy logów
 ## Funkcje
 
 - 📋 **Lista logów** z kolorowym oznaczeniem poziomu ważności
