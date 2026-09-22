@@ -190,6 +190,9 @@ flutter test           # testy widgetów
 - CORS w backendzie jest otwarty (`*`). Dotyczy to klientów działających
   w przeglądarce (np. Flutter Web) — aplikacja natywna nie podlega CORS. Przed
   produkcją należy zawęzić listę dozwolonych źródeł.
+  - Klucz API Google Gemini nie jest przechowywany w repozytorium — należy go
+  wygenerować w Google AI Studio i dodać w n8n jako Credentials
+  (Google Gemini (PaLM) API), a następnie wybrać w węźle *Message a model*.
 
 
 
