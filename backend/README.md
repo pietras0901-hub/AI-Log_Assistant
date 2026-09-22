@@ -34,6 +34,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 | `GET` | `/` | Health-check |
 | `GET` | `/logs` | Lista logów. Filtr: `?poziom_waznosci=CRITICAL` |
 | `GET` | `/logs/{id}` | Szczegóły wpisu (404, gdy brak) |
+| `POST` | `/logs` | Dodanie wpisu z diagnozą AI (wywoływane przez n8n), zwraca `201 Created` |
 
 Wartości `poziom_waznosci`: `INFO`, `WARNING`, `ERROR`, `CRITICAL`.
 Lista jest sortowana malejąco po `data_wpisu` (najnowsze na górze).
