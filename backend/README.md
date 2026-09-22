@@ -74,11 +74,12 @@ flutter run --dart-define=API_BASE_URL=http://192.168.0.10:8000
 ```
 backend/
 ├── main.py            # Aplikacja FastAPI i endpointy
-├── models.py          # Modele Pydantic (LogEntry, PoziomWaznosci)
+├── models.py          # Modele Pydantic (LogEntry, NowyLog, PoziomWaznosci)
 ├── sample_data.py     # Przykładowe dane (8 wpisów, w pamięci)
 ├── requirements.txt   # Zależności
 └── README.md
 ```
 
-> Dane przechowywane są w pamięci (`sample_data.py`). W docelowym wdrożeniu
-> należałoby podpiąć bazę danych (np. PostgreSQL + SQLAlchemy).
+> Dane przechowywane są w pamięci: lista startuje z przykładowych wpisów
+> (`sample_data.py`), a wpisy dodane przez `POST /logs` giną po restarcie serwera.
+> W docelowym wdrożeniu należałoby podpiąć bazę danych (np. SQLite lub PostgreSQL + SQLAlchemy).
