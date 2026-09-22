@@ -2,10 +2,11 @@
 
 Aplikacja mobilna do monitorowania logów systemowych z analizą AI, stworzona dla
 fikcyjnej firmy **CyberTech Solutions**. Projekt powstał jako praca inżynierska
-i składa się z dwóch komponentów:
+i składa się z trzech komponentów:
 
 - **`log_assistant/`** — aplikacja mobilna (Flutter, Material Design 3)
 - **`backend/`** — serwer API (FastAPI) dostarczający logi wraz z diagnozą AI
+- **workflow n8n** — orkiestracja: filtrowanie zdarzeń i wywołanie modelu Gemini 
 
 Administrator IT przegląda logi z serwerów produkcyjnych, filtruje je po poziomie
 ważności i dla każdego wpisu otrzymuje gotową rekomendację wygenerowaną przez AI.
@@ -32,10 +33,19 @@ backend, dzięki czemu warstwa mobilna pozostaje cienka i łatwa w utrzymaniu.
 
 ### Przepływ automatyzacji (n8n + Gemini AI)
 
-- **n8n** monitoruje logi i automatycznie triggeruje analizę przy błędach CRITICAL/ERROR
-- **Gemini AI** generuje diagnozę w języku polskim: co się stało, dlaczego groźne, 
-  co zrobić
-- Technik widzi gotową instrukcję naprawczą bez potrzeby samodzielnej analizy logów
+1. **Webhook** przyjmuje zdarzenie na `POST /webhook/logs` i od razu odpowiada
+   `Workflow was started` — dalsze przetwarzanie jest asynchroniczne.
+2. **IF** przepuszcza tylko zdarzenia `ERROR` lub `CRITICAL`; `INFO` i `WARNING`
+   kończą się na gałęzi `false`, bez wywołania modelu.
+3. **Message a model** wysyła do Gemini 3 Flash prompt z rolą eksperta IT; odpowiedź
+   po polsku w trzech punktach: przyczyna, możliwe konsekwencje, kroki naprawcze.
+4. **HTTP Request** odsyła zdarzenie wraz z diagnozą na `POST /logs` backendu
+   (`http://host.docker.internal:8000/logs` — n8n działa w kontenerze Docker).
+
+Zdarzenia wysyłane są obecnie ręcznie (PowerShell, `Invoke-RestMethod`); w docelowym
+wdrożeniu źródłem byłyby serwery lub agent zbierający logi.
+
+---
 ## Funkcje
 
 - 📋 **Lista logów** z kolorowym oznaczeniem poziomu ważności
@@ -134,6 +144,7 @@ flutter run --dart-define=API_BASE_URL=http://192.168.0.10:8000
 | `GET` | `/` | Health-check |
 | `GET` | `/logs` | Lista logów. Filtr: `?poziom_waznosci=CRITICAL` |
 | `GET` | `/logs/{id}` | Szczegóły wpisu (404, gdy brak) |
+| `POST` | `/logs` | Dodanie wpisu z diagnozą AI (wywoływane przez n8n), zwraca `201 Created` |
 
 Pełny opis kontraktu znajduje się w [`backend/README.md`](backend/README.md).
 
@@ -170,11 +181,16 @@ flutter test           # testy widgetów
 
 ## Uwagi
 
-- Dane logów są przechowywane **w pamięci** (`backend/sample_data.py`). W docelowym
-  wdrożeniu należałoby podpiąć bazę danych (np. PostgreSQL + SQLAlchemy).
-- CORS w backendzie jest otwarty (`*`) — wygodne na czas developmentu; przed produkcją
-  należy zawęzić listę dozwolonych źródeł.
+- Dane logów są przechowywane **w pamięci** procesu: rejestr startuje od danych
+  przykładowych (`backend/sample_data.py`), a wpisy przysłane przez n8n są do niego
+  dopisywane i znikają po restarcie backendu. W docelowym wdrożeniu należałoby
+  podpiąć bazę danych (np. SQLite lub PostgreSQL).
+- Diagnozy z Gemini zawierają formatowanie Markdown, które aplikacja wyświetla
+  jako zwykły tekst.
+- CORS w backendzie jest otwarty (`*`). Dotyczy to klientów działających
+  w przeglądarce (np. Flutter Web) — aplikacja natywna nie podlega CORS. Przed
+  produkcją należy zawęzić listę dozwolonych źródeł.
 
 ---
 
-_Projekt edukacyjny (praca inżynierska) — CyberTech Solutions._
+
