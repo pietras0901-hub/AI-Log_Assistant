@@ -191,6 +191,5 @@ flutter test           # testy widgetów
   w przeglądarce (np. Flutter Web) — aplikacja natywna nie podlega CORS. Przed
   produkcją należy zawęzić listę dozwolonych źródeł.
 
----
 
 
