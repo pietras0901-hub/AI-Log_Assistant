@@ -1,0 +1,181 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "logs",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -464,
+        -16
+      ],
+      "id": "9f024a9b-cff6-4a31-b972-81325b9e9ab1",
+      "name": "Webhook",
+      "webhookId": "9249e043-903d-45a5-9463-087981b2b728"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a1c2f11a-1954-48cc-8101-561b8776e623",
+              "leftValue": "={{ $json.body.level }}",
+              "rightValue": "ERROR",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "b572a8b2-9a4c-40da-baa2-58b7c6853430",
+              "leftValue": "={{ $json.body.level }}",
+              "rightValue": "CRITICAL",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -256,
+        -16
+      ],
+      "id": "83686297-677e-4376-b5ff-94cb2f2b2077",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-flash-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Jesteś ekspertem IT. Przeanalizuj poniższy błąd systemowy i odpowiedz w języku polskim w 3 punktach:\n1. Przyczyna błędu\n2. Możliwe konsekwencje\n3. Kroki naprawcze\n\nBłąd: {{ $json.body.message }}\nSerwis: {{ $json.body.service }}\nPoziom: {{ $json.body.level }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        -112
+      ],
+      "id": "4502d017-090c-4c3d-b580-003748f07fba",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8rq3BTUavIzNVjXp",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/logs",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "maszyna_nazwa",
+              "value": "={{ $('Webhook').item.json.body.service }}"
+            },
+            {
+              "name": "opis_bledu",
+              "value": "={{ $('Webhook').item.json.body.message }}"
+            },
+            {
+              "name": "poziom_waznosci",
+              "value": "={{ $('Webhook').item.json.body.level }}"
+            },
+            {
+              "name": "rekomendacja_ai",
+              "value": "={{ $json.content.parts[0].text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        304,
+        -112
+      ],
+      "id": "1c124b16-e6ee-4342-a2c2-d9e8f4d2585d",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3e57622b-918d-40cd-9f65-b707c4e273cb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0a9d869eef260676936eebb6a92d0072df1e7e5f04a558fd17a624a32bafd727"
+  },
+  "id": "mpqrvy5w1EfF0SwC",
+  "tags": []
+}
