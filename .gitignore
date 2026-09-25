@@ -3,7 +3,7 @@ __pycache__/
 .venv/
 *.pyc
 *.pyo
-.pytest_cache__/
+.pytest_cache/
 
 # Flutter
 build/
